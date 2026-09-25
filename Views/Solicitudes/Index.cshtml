@@ -6,12 +6,12 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">Mis solicitudes</h1>
-    @* ACCIONES *@
+    <a asp-action="Crear" class="btn btn-success">+ Nueva solicitud</a>
 </div>
 
 @if (!Model.TieneCliente)
 {
-    <div class="alert alert-info">Tu usuario aún no tiene un perfil de cliente asociado.</div>
+    <div class="alert alert-info">Tu usuario aún no tiene un perfil de cliente. <a asp-action="Perfil">Registra tus ingresos mensuales</a>.</div>
 }
 
 <form method="get" asp-action="Index" class="card card-body mb-3">
