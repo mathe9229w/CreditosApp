@@ -4,7 +4,7 @@ Plataforma web interna para gestionar **solicitudes de crédito**: los clientes 
 
 **Stack:** ASP.NET Core MVC (.NET 10) + Identity · EF Core + SQLite · Sesión y cache en Redis · WebSocket (hub ASP.NET en `/hubs/solicitudes`) · RabbitMQ gestionado en CloudAMQP · Docker en Render.com
 
-**URL en Render:** `https://<tu-servicio>.onrender.com` ← reemplazar después del despliegue
+**URL en Render:** https://creditosapp-0ykw.onrender.com
 
 ---
 
