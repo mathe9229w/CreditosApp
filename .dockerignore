@@ -1,0 +1,10 @@
+bin/
+obj/
+.git/
+.vs/
+.vscode/
+*.db
+*.db-shm
+*.db-wal
+README.md
+evidencias/

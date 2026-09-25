@@ -5,6 +5,7 @@ using CreditosApp.Mensajeria;
 using CreditosApp.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -47,6 +48,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
+
+// Render termina TLS en su proxy: respetar X-Forwarded-Proto/For (https/wss correctos)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // ---------- Redis: cache distribuida + sesión + llaves de DataProtection ----------
 var redisConnectionString = builder.Configuration["Redis:ConnectionString"];
@@ -95,6 +104,8 @@ builder.Services.AddScoped<ProcesadorNotificaciones>();
 builder.Services.AddHostedService<ConsumidorNotificaciones>();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 await DbSeeder.InicializarAsync(app.Services);
 
