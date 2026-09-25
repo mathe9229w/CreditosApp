@@ -8,6 +8,7 @@ namespace CreditosApp.Services;
 public class EvaluacionService(
     ApplicationDbContext db,
     ICacheSolicitudes cache,
+    INotificadorSolicitudes notificador,
     ILogger<EvaluacionService> logger) : IEvaluacionService
 {
     public Task<List<SolicitudCredito>> ListarPendientesAsync() =>
@@ -65,7 +66,11 @@ public class EvaluacionService(
         logger.LogInformation("Solicitud {SolicitudId} -> {Estado}", solicitud.Id, solicitud.Estado);
 
         // 2) Invalidar cache Redis del propietario
-        await cache.InvalidarAsync(solicitud.Cliente!.UsuarioId);
+        var propietario = solicitud.Cliente!.UsuarioId; // identidad obtenida desde la BD (servidor)
+        await cache.InvalidarAsync(propietario);
+
+        // 3) Recién después emitir el evento WebSocket, solo al propietario
+        await notificador.NotificarEstadoAsync(propietario, solicitud);
 
         return ResultadoOperacion.Ok(mensaje, solicitud.Id);
     }

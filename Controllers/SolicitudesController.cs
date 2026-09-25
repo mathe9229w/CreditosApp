@@ -46,6 +46,14 @@ public class SolicitudesController(ISolicitudService solicitudes) : Controller
         return View(solicitud);
     }
 
+    // GET /Solicitudes/Estados  -> estado vigente para resincronizar tras reconexión del WebSocket
+    [HttpGet]
+    public async Task<IActionResult> Estados()
+    {
+        var lista = await solicitudes.ListarEstadosVigentesAsync(UsuarioId);
+        return Json(lista.Select(s => new { solicitudId = s.Id, estado = s.Estado.ToString(), motivoRechazo = s.MotivoRechazo }));
+    }
+
     // GET /Solicitudes/Crear
     [HttpGet]
     public async Task<IActionResult> Crear()
