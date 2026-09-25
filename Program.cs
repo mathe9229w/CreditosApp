@@ -65,6 +65,7 @@ builder.Services.AddSession(options =>
 // ---------- Servicios de dominio ----------
 builder.Services.AddScoped<ICacheSolicitudes, CacheSolicitudes>();
 builder.Services.AddScoped<ISolicitudService, SolicitudService>();
+builder.Services.AddScoped<IEvaluacionService, EvaluacionService>();
 
 var app = builder.Build();
 
