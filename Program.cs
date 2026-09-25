@@ -1,7 +1,9 @@
 using System.Globalization;
 using CreditosApp.Data;
+using CreditosApp.Hubs;
 using CreditosApp.Services;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -26,7 +28,24 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// Hub y endpoints JSON: responder 401 (no redirigir al login) a peticiones anónimas.
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events.OnRedirectToLogin = context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/hubs") ||
+            context.Request.Path.StartsWithSegments("/Solicitudes/Estados"))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        }
+        context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    };
+});
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 // ---------- Redis: cache distribuida + sesión + llaves de DataProtection ----------
 var redisConnectionString = builder.Configuration["Redis:ConnectionString"];
@@ -66,6 +85,7 @@ builder.Services.AddSession(options =>
 builder.Services.AddScoped<ICacheSolicitudes, CacheSolicitudes>();
 builder.Services.AddScoped<ISolicitudService, SolicitudService>();
 builder.Services.AddScoped<IEvaluacionService, EvaluacionService>();
+builder.Services.AddSingleton<INotificadorSolicitudes, NotificadorSolicitudes>();
 
 var app = builder.Build();
 
@@ -92,6 +112,12 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+// Hub protegido por Identity, solo transporte WebSocket
+app.MapHub<SolicitudesHub>(SolicitudesHub.Ruta, options =>
+{
+    options.Transports = HttpTransportType.WebSockets;
+});
 
 app.MapRazorPages()
    .WithStaticAssets();

@@ -20,6 +20,9 @@ public class SolicitudService(ApplicationDbContext db, ICacheSolicitudes cache, 
         return (desdeBd, false);
     }
 
+    public async Task<IReadOnlyList<SolicitudResumen>> ListarEstadosVigentesAsync(string usuarioId) =>
+        await ConsultarDelUsuarioAsync(usuarioId);
+
     public Task<SolicitudCredito?> ObtenerDelUsuarioAsync(int solicitudId, string usuarioId) =>
         db.Solicitudes
             .AsNoTracking()

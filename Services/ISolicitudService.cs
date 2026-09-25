@@ -10,6 +10,9 @@ public interface ISolicitudService
     /// <summary>Solicitudes del usuario autenticado (cacheadas 60 s en Redis).</summary>
     Task<(IReadOnlyList<SolicitudResumen> Items, bool DesdeCache)> ListarDelUsuarioAsync(string usuarioId);
 
+    /// <summary>Estado vigente leído directamente de la BD (usado al reconectar el WebSocket).</summary>
+    Task<IReadOnlyList<SolicitudResumen>> ListarEstadosVigentesAsync(string usuarioId);
+
     /// <summary>Detalle de una solicitud, solo si pertenece al usuario.</summary>
     Task<SolicitudCredito?> ObtenerDelUsuarioAsync(int solicitudId, string usuarioId);
 

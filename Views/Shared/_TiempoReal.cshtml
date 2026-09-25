@@ -1,0 +1,9 @@
+@* Conexión WebSocket al hub /hubs/solicitudes (Mis solicitudes y Detalle) *@
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080; max-width: 380px">
+    <div id="avisos-tiempo-real"></div>
+    <div class="text-end">
+        <span id="ws-estado" class="badge bg-secondary">WebSocket: iniciando…</span>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+<script src="~/js/tiempo-real.js" asp-append-version="true"></script>
