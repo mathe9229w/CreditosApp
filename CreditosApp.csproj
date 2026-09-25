@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>CreditosApp</RootNamespace>
+    <UserSecretsId>47393940-fb1c-4c91-8d15-6cdeb83045d6</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
