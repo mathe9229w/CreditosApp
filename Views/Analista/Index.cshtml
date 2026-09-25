@@ -1,0 +1,56 @@
+@model List<SolicitudCredito>
+@{
+    ViewData["Title"] = "Panel Analista";
+}
+
+<h1 class="h3">Panel Analista – Solicitudes pendientes</h1>
+
+@if (TempData["Exito"] is string exito) { <div class="alert alert-success">@exito</div> }
+@if (TempData["Error"] is string error) { <div class="alert alert-danger">@error</div> }
+
+@if (!Model.Any())
+{
+    <p class="text-muted">No hay solicitudes pendientes.</p>
+}
+else
+{
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Fecha</th>
+                <th class="text-end">Monto</th>
+                <th class="text-end">Ingresos</th>
+                <th class="text-end">Monto / ingresos</th>
+                <th>Aprobar</th>
+                <th>Rechazar</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var s in Model)
+        {
+            var ratio = s.MontoSolicitado / s.Cliente!.IngresosMensuales;
+            var excede = !ReglasCredito.PuedeAprobarse(s.MontoSolicitado, s.Cliente.IngresosMensuales);
+            <tr>
+                <td>@s.Id</td>
+                <td>@Formato.Fecha(s.FechaSolicitud)</td>
+                <td class="text-end">@Formato.Soles(s.MontoSolicitado)</td>
+                <td class="text-end">@Formato.Soles(s.Cliente.IngresosMensuales)</td>
+                <td class="text-end @(excede ? "text-danger fw-bold" : "")">@ratio.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)x</td>
+                <td>
+                    <form asp-action="Aprobar" asp-route-id="@s.Id" method="post">
+                        <button type="submit" class="btn btn-sm btn-success" title="@(excede ? "Excede 5x ingresos: el servidor rechazará la aprobación" : "")">Aprobar</button>
+                    </form>
+                </td>
+                <td>
+                    <form asp-action="Rechazar" asp-route-id="@s.Id" method="post" class="d-flex gap-1">
+                        <input name="motivoRechazo" class="form-control form-control-sm" placeholder="Motivo (obligatorio)" maxlength="500" />
+                        <button type="submit" class="btn btn-sm btn-danger">Rechazar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <p class="small text-muted">Regla: no se aprueba si el monto excede 5 veces los ingresos mensuales. Validado en servidor.</p>
+}
