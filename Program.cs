@@ -1,7 +1,13 @@
+using System.Globalization;
 using CreditosApp.Data;
+using CreditosApp.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+
+// Cultura invariante: el punto es separador decimal en formularios y en el servidor (Render/Linux).
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +25,9 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
+
+// ---------- Servicios de dominio ----------
+builder.Services.AddScoped<ISolicitudService, SolicitudService>();
 
 var app = builder.Build();
 

@@ -1,0 +1,32 @@
+@model SolicitudCredito
+@{
+    ViewData["Title"] = $"Solicitud #{Model.Id}";
+}
+
+<h1 class="h3">Solicitud #@Model.Id</h1>
+
+<div class="card" data-solicitud-id="@Model.Id">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Estado</dt>
+            <dd class="col-sm-8"><span class="badge @Formato.BadgeEstado(Model.Estado)" data-estado>@Model.Estado</span></dd>
+
+            <dt class="col-sm-4">Monto solicitado</dt>
+            <dd class="col-sm-8">@Formato.Soles(Model.MontoSolicitado)</dd>
+
+            <dt class="col-sm-4">Fecha de solicitud</dt>
+            <dd class="col-sm-8">@Formato.Fecha(Model.FechaSolicitud)</dd>
+
+            <dt class="col-sm-4">Ingresos mensuales del cliente</dt>
+            <dd class="col-sm-8">@Formato.Soles(Model.Cliente!.IngresosMensuales)</dd>
+
+            <dt class="col-sm-4">Relación monto / ingresos</dt>
+            <dd class="col-sm-8">@((Model.MontoSolicitado / Model.Cliente.IngresosMensuales).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))x</dd>
+
+            <dt class="col-sm-4">Motivo de rechazo</dt>
+            <dd class="col-sm-8" data-motivo>@(Model.MotivoRechazo ?? "—")</dd>
+        </dl>
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-link mt-3">&larr; Volver a mis solicitudes</a>

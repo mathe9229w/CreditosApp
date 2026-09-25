@@ -1,0 +1,82 @@
+@model CreditosApp.Models.ViewModels.MisSolicitudesViewModel
+@{
+    ViewData["Title"] = "Mis solicitudes";
+    var f = Model.Filtro;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Mis solicitudes</h1>
+    @* ACCIONES *@
+</div>
+
+@if (!Model.TieneCliente)
+{
+    <div class="alert alert-info">Tu usuario aún no tiene un perfil de cliente asociado.</div>
+}
+
+<form method="get" asp-action="Index" class="card card-body mb-3">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="row g-2 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label" for="Estado">Estado</label>
+            <select class="form-select" id="Estado" name="Estado">
+                <option value="">Todos</option>
+                @foreach (var e in Enum.GetValues<EstadoSolicitud>())
+                {
+                    <option value="@e" selected="@(f.Estado == e)">@e</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="Filtro.MontoMin" class="form-label"></label>
+            <input name="MontoMin" value="@f.MontoMin" type="number" step="0.01" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label asp-for="Filtro.MontoMax" class="form-label"></label>
+            <input name="MontoMax" value="@f.MontoMax" type="number" step="0.01" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label asp-for="Filtro.FechaInicio" class="form-label"></label>
+            <input name="FechaInicio" value="@(f.FechaInicio?.ToString("yyyy-MM-dd"))" type="date" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label asp-for="Filtro.FechaFin" class="form-label"></label>
+            <input name="FechaFin" value="@(f.FechaFin?.ToString("yyyy-MM-dd"))" type="date" class="form-control" />
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
+        </div>
+    </div>
+</form>
+
+@if (!Model.Solicitudes.Any())
+{
+    <p class="text-muted">No hay solicitudes para mostrar.</p>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Fecha</th>
+                <th class="text-end">Monto</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var s in Model.Solicitudes)
+        {
+            <tr data-solicitud-id="@s.Id">
+                <td>@s.Id</td>
+                <td>@Formato.Fecha(s.FechaSolicitud)</td>
+                <td class="text-end">@Formato.Soles(s.MontoSolicitado)</td>
+                <td><span class="badge @Formato.BadgeEstado(s.Estado)" data-estado>@s.Estado</span></td>
+                <td><a asp-action="Detalle" asp-route-id="@s.Id" class="btn btn-sm btn-outline-primary">Ver detalle</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
