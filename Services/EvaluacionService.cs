@@ -1,4 +1,5 @@
 using CreditosApp.Data;
+using CreditosApp.Mensajeria;
 using CreditosApp.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,7 @@ public class EvaluacionService(
     ApplicationDbContext db,
     ICacheSolicitudes cache,
     INotificadorSolicitudes notificador,
+    IPublicadorSolicitudes publicador,
     ILogger<EvaluacionService> logger) : IEvaluacionService
 {
     public Task<List<SolicitudCredito>> ListarPendientesAsync() =>
@@ -54,6 +56,44 @@ public class EvaluacionService(
         solicitud.Estado = EstadoSolicitud.Rechazado;
         solicitud.MotivoRechazo = motivo;
         return await GuardarAsync(solicitud, $"Solicitud #{solicitudId} rechazada.");
+    }
+
+    public Task<List<SolicitudCredito>> ListarNoEncoladasAsync() =>
+        db.Solicitudes.AsNoTracking()
+            .Where(s => s.NotificacionMessageId != null && !s.NotificacionEncolada)
+            .OrderBy(s => s.Id)
+            .ToListAsync();
+
+    /// <summary>
+    /// Reenvío manual del evento SolicitudRegistrada con el MISMO MessageId guardado.
+    /// El consumidor es idempotente: si ya se procesó, confirma sin duplicar.
+    /// </summary>
+    public async Task<ResultadoOperacion> ReenviarNotificacionAsync(int solicitudId)
+    {
+        var solicitud = await CargarAsync(solicitudId);
+        if (solicitud is null) return ResultadoOperacion.Error($"La solicitud #{solicitudId} no existe.");
+
+        solicitud.NotificacionMessageId ??= Guid.NewGuid(); // solicitudes semilla sin MessageId
+        var mensaje = new MensajeSolicitudRegistrada
+        {
+            MessageId = solicitud.NotificacionMessageId.Value,
+            SolicitudId = solicitud.Id,
+            UsuarioId = solicitud.Cliente!.UsuarioId,
+            FechaEventoUtc = DateTime.UtcNow
+        };
+        try
+        {
+            await publicador.PublicarAsync(mensaje);
+            solicitud.NotificacionEncolada = true;
+            await db.SaveChangesAsync();
+            return ResultadoOperacion.Ok($"Notificación de la solicitud #{solicitudId} reenviada (MessageId {mensaje.MessageId}).");
+        }
+        catch (Exception ex)
+        {
+            await db.SaveChangesAsync(); // conserva el MessageId generado
+            logger.LogError(ex, "Falló el reenvío de SolicitudId={SolicitudId} MessageId={MessageId}", solicitudId, mensaje.MessageId);
+            return ResultadoOperacion.Error($"No se pudo reenviar la notificación: {ex.Message}");
+        }
     }
 
     private Task<SolicitudCredito?> CargarAsync(int id) =>

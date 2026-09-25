@@ -1,0 +1,26 @@
+@model List<Notificacion>
+@{
+    ViewData["Title"] = "Mis notificaciones";
+}
+
+<h1 class="h3">Mis notificaciones</h1>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">Aún no tienes notificaciones.</p>
+}
+else
+{
+    <ul class="list-group">
+    @foreach (var n in Model)
+    {
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between">
+                <span>@n.Texto</span>
+                <a asp-controller="Solicitudes" asp-action="Detalle" asp-route-id="@n.SolicitudId">Solicitud #@n.SolicitudId</a>
+            </div>
+            <small class="text-muted">Procesada: @Formato.Fecha(n.FechaProcesamientoUtc) · MessageId: <code>@n.MessageId</code></small>
+        </li>
+    }
+    </ul>
+}

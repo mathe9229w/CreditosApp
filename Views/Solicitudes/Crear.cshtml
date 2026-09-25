@@ -12,6 +12,10 @@
         <a asp-action="Detalle" asp-route-id="@ViewBag.SolicitudId" class="alert-link">Ver detalle</a>
     </div>
 }
+@if (ViewBag.Advertencia is string advertencia)
+{
+    <div class="alert alert-warning">@advertencia</div>
+}
 @if (ViewBag.Error is string error)
 {
     <div class="alert alert-danger">@error</div>
