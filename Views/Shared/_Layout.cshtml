@@ -30,6 +30,18 @@
                             </li>
                         }
                         @* MENU *@
+                        @{
+                            var ultimaId = Context.Session.GetInt32(SesionKeys.UltimaSolicitudId);
+                            var ultimaMonto = Context.Session.GetString(SesionKeys.UltimaSolicitudMonto);
+                            var ultimaUsuario = Context.Session.GetString(SesionKeys.UltimaSolicitudUsuario);
+                            var usuarioActual = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                        }
+                        @if (ultimaId.HasValue && usuarioActual is not null && ultimaUsuario == usuarioActual)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-primary" asp-area="" asp-controller="Solicitudes" asp-action="Detalle" asp-route-id="@ultimaId">Ver última solicitud @ultimaMonto</a>
+                            </li>
+                        }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>

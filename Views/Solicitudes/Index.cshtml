@@ -50,6 +50,12 @@
     </div>
 </form>
 
+<p class="small text-muted mb-2">
+    Origen del listado:
+    @if (ViewBag.DesdeCache == true) { <span class="badge bg-info text-dark">cache Redis (60 s)</span> }
+    else { <span class="badge bg-secondary">base de datos</span> }
+</p>
+
 @if (!Model.Solicitudes.Any())
 {
     <p class="text-muted">No hay solicitudes para mostrar.</p>
