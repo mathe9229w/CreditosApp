@@ -160,7 +160,79 @@ El `MessageId` se guarda en `SolicitudesCredito.NotificacionMessageId`.
 
 ## 9. Evidencias
 
-Guardar las capturas en `evidencias/`:
-- `p6-ws-101.png` (DevTools, conexión WebSocket), `p6-cliente-actualizado.png`, `p6-anonimo-401.png`
-- `p7-cola-pendiente.png`, `p7-cola-vacia.png`, `p7-una-notificacion.png`, `p7-reenvio-sin-duplicado.png`
-- `p8-render-online.png`
+### Git - Ramas publicadas en GitHub
+
+![Git - Ramas publicadas en GitHub](evidencias/9ramas.png)
+
+### analista.
+
+![analista.](evidencias/analista..png)
+
+### analista
+
+![analista](evidencias/analista.png)
+
+### cliente1
+
+![cliente1](evidencias/cliente1.png)
+
+### cliente2
+
+![cliente2](evidencias/cliente2.png)
+
+### P6 - Evento SolicitudEstadoActualizado recibido por el WebSocket (sin recargar)
+
+![P6 - Evento SolicitudEstadoActualizado recibido por el WebSocket (sin recargar)](evidencias/estado%20solicitud.png)
+
+### P4 - Listado servido desde cache Redis (60 s) y WebSocket conectado
+
+![P4 - Listado servido desde cache Redis (60 s) y WebSocket conectado](evidencias/p4-cache-redis.png)
+
+### P6 - Conexion anonima al hub rechazada (401)
+
+![P6 - Conexion anonima al hub rechazada (401)](evidencias/p6-anonimo-401.png)
+
+### P6 - Un segundo cliente NO recibe el evento
+
+![P6 - Un segundo cliente NO recibe el evento](evidencias/p6-segundo-cliente.png)
+
+### P6 - Conexion wss://.../hubs/solicitudes con 101 Switching Protocols
+
+![P6 - Conexion wss://.../hubs/solicitudes con 101 Switching Protocols](evidencias/p6-ws-101.png)
+
+### P7 - Consumidor deshabilitado: mensaje pendiente en solicitudes.notificaciones
+
+![P7 - Consumidor deshabilitado: mensaje pendiente en solicitudes.notificaciones](evidencias/p7-cola-pendiente.png)
+
+### P7 - Consumidor habilitado: la cola se vacia
+
+![P7 - Consumidor habilitado: la cola se vacia](evidencias/p7-cola-vacia.png)
+
+### P7 - Mensaje invalido rechazado sin reencolar (log)
+
+![P7 - Mensaje invalido rechazado sin reencolar (log)](evidencias/p7-mensaje-invalido-log.png)
+
+### P7 - Tras el reenvio sigue habiendo una sola notificacion
+
+![P7 - Tras el reenvio sigue habiendo una sola notificacion](evidencias/p7-reenvio-sin-duplicado.png)
+
+### P7 - Reenvio manual con el mismo MessageId (Panel Analista)
+
+![P7 - Reenvio manual con el mismo MessageId (Panel Analista)](evidencias/p7-reenvio-sin-duplicado-analista.png)
+
+### P7 - Una sola notificacion en Mis notificaciones
+
+![P7 - Una sola notificacion en Mis notificaciones](evidencias/p7-una-notificacion.png)
+
+### P8 - Servicio Live en Render
+
+![P8 - Servicio Live en Render](evidencias/p8-render-online.png)
+
+### README con la URL de Render
+
+![README con la URL de Render](evidencias/readme%20url.png)
+
+### P6 - Conexion WebSocket en DevTools
+
+![P6 - Conexion WebSocket en DevTools](evidencias/WS.png)
+
