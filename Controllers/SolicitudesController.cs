@@ -82,6 +82,7 @@ public class SolicitudesController(ISolicitudService solicitudes) : Controller
         // Feedback en la misma vista
         ModelState.Clear();
         ViewBag.Exito = resultado.Mensaje;
+        ViewBag.Advertencia = resultado.Advertencia;
         ViewBag.SolicitudId = resultado.SolicitudId;
         return View(await ConstruirFormularioAsync(new NuevaSolicitudViewModel()));
     }

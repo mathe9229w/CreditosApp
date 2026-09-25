@@ -18,4 +18,10 @@ public class SolicitudCredito
 
     [StringLength(500)]
     public string? MotivoRechazo { get; set; }
+
+    /// <summary>MessageId (UUID) del evento SolicitudRegistrada. Se reutiliza en reenvíos manuales.</summary>
+    public Guid? NotificacionMessageId { get; set; }
+
+    /// <summary>true cuando el broker confirmó (publisher confirm) la publicación.</summary>
+    public bool NotificacionEncolada { get; set; }
 }

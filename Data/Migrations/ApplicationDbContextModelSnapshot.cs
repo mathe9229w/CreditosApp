@@ -43,6 +43,40 @@ namespace CreditosApp.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CreditosApp.Models.Notificacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("FechaProcesamientoUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SolicitudId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId")
+                        .IsUnique();
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Notificaciones");
+                });
+
             modelBuilder.Entity("CreditosApp.Models.SolicitudCredito", b =>
                 {
                     b.Property<int>("Id")
@@ -63,6 +97,12 @@ namespace CreditosApp.Data.Migrations
 
                     b.Property<string>("MotivoRechazo")
                         .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("NotificacionEncolada")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("NotificacionMessageId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

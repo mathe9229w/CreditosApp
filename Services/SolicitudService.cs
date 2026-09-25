@@ -1,11 +1,16 @@
 using CreditosApp.Data;
+using CreditosApp.Mensajeria;
 using CreditosApp.Models;
 using CreditosApp.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace CreditosApp.Services;
 
-public class SolicitudService(ApplicationDbContext db, ICacheSolicitudes cache, ILogger<SolicitudService> logger) : ISolicitudService
+public class SolicitudService(
+    ApplicationDbContext db,
+    ICacheSolicitudes cache,
+    IPublicadorSolicitudes publicador,
+    ILogger<SolicitudService> logger) : ISolicitudService
 {
     public Task<Cliente?> ObtenerClienteAsync(string usuarioId) =>
         db.Clientes.FirstOrDefaultAsync(c => c.UsuarioId == usuarioId);
@@ -58,7 +63,8 @@ public class SolicitudService(ApplicationDbContext db, ICacheSolicitudes cache, 
             ClienteId = cliente.Id,
             MontoSolicitado = montoSolicitado,
             FechaSolicitud = DateTime.UtcNow,
-            Estado = EstadoSolicitud.Pendiente
+            Estado = EstadoSolicitud.Pendiente,
+            NotificacionMessageId = Guid.NewGuid() // se guarda para poder reenviar con el mismo MessageId
         };
         db.Solicitudes.Add(solicitud);
 
@@ -75,7 +81,38 @@ public class SolicitudService(ApplicationDbContext db, ICacheSolicitudes cache, 
 
         logger.LogInformation("Solicitud {SolicitudId} registrada para {UsuarioId}", solicitud.Id, usuarioId);
         await cache.InvalidarAsync(usuarioId); // Invalidación: nueva solicitud
-        return ResultadoOperacion.Ok($"Solicitud #{solicitud.Id} registrada correctamente por {Formato.Soles(montoSolicitado)}. Estado: Pendiente.", solicitud.Id);
+
+        // Cloud MQ: publicar SOLO después de validar y persistir la solicitud.
+        var advertencia = await PublicarSolicitudRegistradaAsync(solicitud, usuarioId);
+
+        return ResultadoOperacion.Ok(
+            $"Solicitud #{solicitud.Id} registrada correctamente por {Formato.Soles(montoSolicitado)}. Estado: Pendiente.",
+            solicitud.Id, advertencia);
+    }
+
+    /// <summary>Publica el evento y espera el publisher confirm. Si falla, la solicitud se conserva y se advierte.</summary>
+    private async Task<string?> PublicarSolicitudRegistradaAsync(SolicitudCredito solicitud, string usuarioId)
+    {
+        var mensaje = new MensajeSolicitudRegistrada
+        {
+            MessageId = solicitud.NotificacionMessageId!.Value,
+            SolicitudId = solicitud.Id,
+            UsuarioId = usuarioId,
+            FechaEventoUtc = DateTime.UtcNow
+        };
+        try
+        {
+            await publicador.PublicarAsync(mensaje);
+            solicitud.NotificacionEncolada = true;
+            await db.SaveChangesAsync();
+            return null;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "No se pudo encolar SolicitudRegistrada. SolicitudId={SolicitudId} MessageId={MessageId}. " +
+                "La solicitud se conserva; reenviar manualmente con el mismo MessageId.", solicitud.Id, mensaje.MessageId);
+            return "La solicitud se guardó, pero la notificación de recepción no pudo encolarse. Se reenviará manualmente.";
+        }
     }
 
     public async Task<ResultadoOperacion> GuardarPerfilAsync(string usuarioId, decimal ingresosMensuales)

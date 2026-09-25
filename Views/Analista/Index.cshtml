@@ -54,3 +54,27 @@ else
     </table>
     <p class="small text-muted">Regla: no se aprueba si el monto excede 5 veces los ingresos mensuales. Validado en servidor.</p>
 }
+
+<hr class="my-4" />
+<h2 class="h5">Cloud MQ – Reenvío manual de notificación</h2>
+<p class="small text-muted">Publica otra vez el evento <code>SolicitudRegistrada</code> con el <strong>mismo MessageId</strong>. El consumidor no duplica la notificación.</p>
+@{
+    var noEncoladas = ViewBag.NoEncoladas as List<SolicitudCredito> ?? new();
+}
+@if (noEncoladas.Any())
+{
+    <div class="alert alert-warning">
+        Solicitudes cuya notificación no pudo encolarse:
+        @foreach (var s in noEncoladas)
+        {
+            <form asp-action="ReenviarNotificacion" method="post" class="d-inline">
+                <input type="hidden" name="solicitudId" value="@s.Id" />
+                <button type="submit" class="btn btn-sm btn-outline-dark ms-1">Reenviar #@s.Id</button>
+            </form>
+        }
+    </div>
+}
+<form asp-action="ReenviarNotificacion" method="post" class="d-flex gap-2" style="max-width: 360px">
+    <input name="solicitudId" type="number" min="1" class="form-control form-control-sm" placeholder="Id de solicitud" required />
+    <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">Reenviar mismo MessageId</button>
+</form>

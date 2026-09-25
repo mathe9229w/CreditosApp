@@ -13,6 +13,7 @@ public class AnalistaController(IEvaluacionService evaluacion) : Controller
     [HttpGet("")]
     public async Task<IActionResult> Index()
     {
+        ViewBag.NoEncoladas = await evaluacion.ListarNoEncoladasAsync();
         return View(await evaluacion.ListarPendientesAsync());
     }
 
@@ -32,6 +33,16 @@ public class AnalistaController(IEvaluacionService evaluacion) : Controller
     public async Task<IActionResult> Rechazar(int id, string? motivoRechazo)
     {
         var r = await evaluacion.RechazarAsync(id, motivoRechazo);
+        TempData[r.Exito ? "Exito" : "Error"] = r.Mensaje;
+        return RedirectToAction(nameof(Index));
+    }
+
+    // POST /Analista/ReenviarNotificacion  (Cloud MQ: reenvío manual con el mismo MessageId)
+    [HttpPost("ReenviarNotificacion")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReenviarNotificacion(int solicitudId)
+    {
+        var r = await evaluacion.ReenviarNotificacionAsync(solicitudId);
         TempData[r.Exito ? "Exito" : "Error"] = r.Mensaje;
         return RedirectToAction(nameof(Index));
     }

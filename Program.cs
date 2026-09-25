@@ -1,6 +1,7 @@
 using System.Globalization;
 using CreditosApp.Data;
 using CreditosApp.Hubs;
+using CreditosApp.Mensajeria;
 using CreditosApp.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Connections;
@@ -86,6 +87,12 @@ builder.Services.AddScoped<ICacheSolicitudes, CacheSolicitudes>();
 builder.Services.AddScoped<ISolicitudService, SolicitudService>();
 builder.Services.AddScoped<IEvaluacionService, EvaluacionService>();
 builder.Services.AddSingleton<INotificadorSolicitudes, NotificadorSolicitudes>();
+
+// ---------- Cloud MQ (RabbitMQ en CloudAMQP) ----------
+builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.Seccion));
+builder.Services.AddSingleton<IPublicadorSolicitudes, PublicadorRabbitMq>();
+builder.Services.AddScoped<ProcesadorNotificaciones>();
+builder.Services.AddHostedService<ConsumidorNotificaciones>();
 
 var app = builder.Build();
 

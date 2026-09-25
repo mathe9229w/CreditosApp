@@ -9,6 +9,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<Cliente> Clientes => Set<Cliente>();
     public DbSet<SolicitudCredito> Solicitudes => Set<SolicitudCredito>();
+    public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -43,6 +44,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .IsUnique()
                 .HasFilter("\"Estado\" = 0")
                 .HasDatabaseName("IX_SolicitudesCredito_ClienteId_Pendiente");
+        });
+
+        builder.Entity<Notificacion>(e =>
+        {
+            e.ToTable("Notificaciones");
+            e.HasIndex(n => n.MessageId).IsUnique(); // idempotencia del consumidor
+            e.HasIndex(n => n.UsuarioId);
+            e.Property(n => n.Texto).HasMaxLength(300).IsRequired();
         });
     }
 }
