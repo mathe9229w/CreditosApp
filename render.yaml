@@ -1,0 +1,27 @@
+# Blueprint de Render (opcional: también se puede crear el Web Service a mano desde el dashboard)
+services:
+  - type: web
+    name: creditosapp
+    runtime: docker
+    plan: starter          # necesario para disco persistente (SQLite). En free la BD se reinicia en cada deploy.
+    numInstances: 1        # una sola instancia: SQLite + consumidor BackgroundService dentro de ella
+    healthCheckPath: /
+    disk:
+      name: creditos-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS          # documentativa: el CMD del Dockerfile la sobrescribe expandiendo $PORT
+        value: http://0.0.0.0:${PORT}
+      - key: ConnectionStrings__DefaultConnection
+        value: Data Source=/var/data/creditos.db
+      - key: Redis__ConnectionString
+        sync: false                    # se ingresa en el dashboard (secreto)
+      - key: RabbitMq__ConnectionString
+        sync: false                    # URI amqps de CloudAMQP (secreto)
+      - key: RabbitMq__QueueName
+        value: solicitudes.notificaciones
+      - key: RabbitMq__ConsumerEnabled
+        value: "true"
