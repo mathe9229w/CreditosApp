@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CreditosApp.Models;
 using CreditosApp.Models.ViewModels;
 using CreditosApp.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -15,7 +16,8 @@ public class SolicitudesController(ISolicitudService solicitudes) : Controller
     [HttpGet]
     public async Task<IActionResult> Index([FromQuery] FiltroSolicitudes filtro)
     {
-        var todas = await solicitudes.ListarDelUsuarioAsync(UsuarioId);
+        var (todas, desdeCache) = await solicitudes.ListarDelUsuarioAsync(UsuarioId);
+        ViewBag.DesdeCache = desdeCache;
         var cliente = await solicitudes.ObtenerClienteAsync(UsuarioId);
 
         // Validación server-side: si los filtros son inválidos se informa y no se aplican.
@@ -35,6 +37,12 @@ public class SolicitudesController(ISolicitudService solicitudes) : Controller
     {
         var solicitud = await solicitudes.ObtenerDelUsuarioAsync(id, UsuarioId);
         if (solicitud is null) return NotFound();
+
+        // Sesión (Redis): última solicitud visitada -> enlace en el layout
+        HttpContext.Session.SetInt32(SesionKeys.UltimaSolicitudId, solicitud.Id);
+        HttpContext.Session.SetString(SesionKeys.UltimaSolicitudMonto, Formato.Soles(solicitud.MontoSolicitado));
+        HttpContext.Session.SetString(SesionKeys.UltimaSolicitudUsuario, UsuarioId);
+
         return View(solicitud);
     }
 

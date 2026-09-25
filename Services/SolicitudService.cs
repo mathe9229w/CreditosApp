@@ -5,14 +5,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CreditosApp.Services;
 
-public class SolicitudService(ApplicationDbContext db, ILogger<SolicitudService> logger) : ISolicitudService
+public class SolicitudService(ApplicationDbContext db, ICacheSolicitudes cache, ILogger<SolicitudService> logger) : ISolicitudService
 {
     public Task<Cliente?> ObtenerClienteAsync(string usuarioId) =>
         db.Clientes.FirstOrDefaultAsync(c => c.UsuarioId == usuarioId);
 
-    public async Task<IReadOnlyList<SolicitudResumen>> ListarDelUsuarioAsync(string usuarioId)
+    public async Task<(IReadOnlyList<SolicitudResumen> Items, bool DesdeCache)> ListarDelUsuarioAsync(string usuarioId)
     {
-        return await ConsultarDelUsuarioAsync(usuarioId);
+        var cacheadas = await cache.ObtenerAsync(usuarioId);
+        if (cacheadas is not null) return (cacheadas, true);
+
+        var desdeBd = await ConsultarDelUsuarioAsync(usuarioId);
+        await cache.GuardarAsync(usuarioId, desdeBd);
+        return (desdeBd, false);
     }
 
     public Task<SolicitudCredito?> ObtenerDelUsuarioAsync(int solicitudId, string usuarioId) =>
@@ -66,6 +71,7 @@ public class SolicitudService(ApplicationDbContext db, ILogger<SolicitudService>
         }
 
         logger.LogInformation("Solicitud {SolicitudId} registrada para {UsuarioId}", solicitud.Id, usuarioId);
+        await cache.InvalidarAsync(usuarioId); // Invalidación: nueva solicitud
         return ResultadoOperacion.Ok($"Solicitud #{solicitud.Id} registrada correctamente por {Formato.Soles(montoSolicitado)}. Estado: Pendiente.", solicitud.Id);
     }
 
