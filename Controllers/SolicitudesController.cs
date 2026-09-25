@@ -37,4 +37,63 @@ public class SolicitudesController(ISolicitudService solicitudes) : Controller
         if (solicitud is null) return NotFound();
         return View(solicitud);
     }
+
+    // GET /Solicitudes/Crear
+    [HttpGet]
+    public async Task<IActionResult> Crear()
+    {
+        return View(await ConstruirFormularioAsync(new NuevaSolicitudViewModel()));
+    }
+
+    // POST /Solicitudes/Crear
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Crear(NuevaSolicitudViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Error = "Revise los datos del formulario.";
+            return View(await ConstruirFormularioAsync(model));
+        }
+
+        var resultado = await solicitudes.CrearAsync(UsuarioId, model.MontoSolicitado!.Value);
+        if (!resultado.Exito)
+        {
+            ViewBag.Error = resultado.Mensaje;
+            return View(await ConstruirFormularioAsync(model));
+        }
+
+        // Feedback en la misma vista
+        ModelState.Clear();
+        ViewBag.Exito = resultado.Mensaje;
+        ViewBag.SolicitudId = resultado.SolicitudId;
+        return View(await ConstruirFormularioAsync(new NuevaSolicitudViewModel()));
+    }
+
+    // GET/POST /Solicitudes/Perfil  (ingresos mensuales del cliente)
+    [HttpGet]
+    public async Task<IActionResult> Perfil()
+    {
+        var cliente = await solicitudes.ObtenerClienteAsync(UsuarioId);
+        return View(new PerfilClienteViewModel { IngresosMensuales = cliente?.IngresosMensuales });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Perfil(PerfilClienteViewModel model)
+    {
+        if (!ModelState.IsValid) return View(model);
+        var resultado = await solicitudes.GuardarPerfilAsync(UsuarioId, model.IngresosMensuales!.Value);
+        if (resultado.Exito) ViewBag.Exito = resultado.Mensaje; else ViewBag.Error = resultado.Mensaje;
+        return View(model);
+    }
+
+    private async Task<NuevaSolicitudViewModel> ConstruirFormularioAsync(NuevaSolicitudViewModel model)
+    {
+        var cliente = await solicitudes.ObtenerClienteAsync(UsuarioId);
+        model.TieneCliente = cliente is not null;
+        model.ClienteActivo = cliente?.Activo ?? false;
+        model.IngresosMensuales = cliente?.IngresosMensuales;
+        return model;
+    }
 }
